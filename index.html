@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>請求書ジェネレーター</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>請求書ジェネレーター</h1>
+        </div>
+    </header>
+
+    <!-- ナビゲーション -->
+    <nav id="main-nav">
+        <div class="container">
+            <ul class="nav-menu">
+                <li><a href="#" data-section="home" class="nav-link active">ホーム</a></li>
+                <li><a href="#" data-section="create" class="nav-link">新規作成</a></li>
+                <li><a href="#" data-section="settings" class="nav-link">設定</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- メインコンテンツ -->
+    <main class="container">
+
+        <!-- ホーム画面（請求書一覧） -->
+        <section id="home-section" class="section active">
+            <div class="section-header">
+                <h2>請求書一覧</h2>
+                <div class="header-actions">
+                    <button id="sync-home-btn" class="btn btn-secondary" style="display: none;">
+                        スプレッドシート転送
+                    </button>
+                    <button id="export-excel-btn" class="btn btn-secondary">Excelエクスポート</button>
+                    <button id="export-csv-btn" class="btn btn-secondary">CSVエクスポート</button>
+                    <button id="create-new-btn" class="btn btn-primary">新規作成</button>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="請求書番号、顧客名で検索...">
+                <button id="search-btn" class="btn">検索</button>
+            </div>
+
+            <div id="invoice-list" class="invoice-list">
+                <p class="loading">読み込み中...</p>
+            </div>
+        </section>
+
+        <!-- 請求書作成/編集画面 -->
+        <section id="create-section" class="section">
+            <div class="section-header">
+                <h2 id="form-title">新規請求書作成</h2>
+                <div class="header-actions">
+                    <button id="preview-btn" class="btn btn-secondary">プレビュー</button>
+                    <button id="save-btn" class="btn btn-primary">保存</button>
+                    <button id="cancel-btn" class="btn">キャンセル</button>
+                </div>
+            </div>
+
+            <form id="invoice-form">
+                <!-- 基本情報 -->
+                <div class="form-section">
+                    <h3>基本情報</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="invoice-number">請求書番号 *</label>
+                            <input type="text" id="invoice-number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="invoice-date">発行日 *</label>
+                            <input type="date" id="invoice-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="due-date">支払期限 *</label>
+                            <input type="date" id="due-date" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 顧客情報 -->
+                <div class="form-section">
+                    <h3>請求先情報</h3>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="customer-name">顧客名/会社名 *</label>
+                            <input type="text" id="customer-name" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="customer-address">住所</label>
+                            <input type="text" id="customer-address">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customer-phone">電話番号</label>
+                            <input type="tel" id="customer-phone">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 品目 -->
+                <div class="form-section">
+                    <h3>品目</h3>
+                    <div id="items-container">
+                        <!-- 品目行が動的に追加される -->
+                    </div>
+                    <button type="button" id="add-item-btn" class="btn btn-secondary">+ 品目を追加</button>
+                </div>
+
+                <!-- 合計 -->
+                <div class="form-section">
+                    <div class="totals-box">
+                        <div class="total-row">
+                            <label>小計:</label>
+                            <span id="subtotal-display">¥0</span>
+                        </div>
+                        <div class="total-row">
+                            <label for="tax-rate">消費税率 (%):</label>
+                            <select id="tax-rate">
+                                <option value="10">10%</option>
+                                <option value="8">8% (軽減税率)</option>
+                                <option value="0">0% (非課税)</option>
+                            </select>
+                        </div>
+                        <div class="total-row">
+                            <label>消費税額:</label>
+                            <span id="tax-display">¥0</span>
+                        </div>
+                        <div class="total-row total-final">
+                            <label>合計金額:</label>
+                            <span id="total-display">¥0</span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- 設定画面 -->
+        <section id="settings-section" class="section">
+            <h2>設定</h2>
+
+            <div class="form-section">
+                <h3>会社情報</h3>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="company-name">会社名 *</label>
+                        <input type="text" id="company-name">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="company-address">住所</label>
+                        <input type="text" id="company-address">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="company-phone">電話番号</label>
+                        <input type="tel" id="company-phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="company-email">メールアドレス</label>
+                        <input type="email" id="company-email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="company-logo">会社ロゴ</label>
+                        <input type="file" id="company-logo" accept="image/*">
+                        <div id="logo-preview"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>銀行口座情報</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bank-name">銀行名</label>
+                        <input type="text" id="bank-name">
+                    </div>
+                    <div class="form-group">
+                        <label for="bank-branch">支店名</label>
+                        <input type="text" id="bank-branch">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bank-account-number">口座番号</label>
+                        <input type="text" id="bank-account-number">
+                    </div>
+                    <div class="form-group">
+                        <label for="bank-account-name">口座名義</label>
+                        <input type="text" id="bank-account-name">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Googleスプレッドシート連携（オプション）</h3>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="apps-script-url">Apps Script Web App URL</label>
+                        <input type="url" id="apps-script-url" placeholder="https://script.google.com/macros/s/...">
+                        <small>
+                            Googleスプレッドシートに自動保存する場合は、Apps Script Web App の URL を入力してください。<br>
+                            空欄の場合はローカル（ブラウザ内）のみに保存されます。<br>
+                            <a href="#" id="show-apps-script-guide">セットアップ手順を見る</a>
+                        </small>
+                    </div>
+                </div>
+                <div class="form-row" id="sync-section" style="display: none;">
+                    <div class="form-group full-width">
+                        <button type="button" id="sync-to-spreadsheet-btn" class="btn btn-secondary">
+                            既存データをスプレッドシートに転送
+                        </button>
+                        <small>
+                            ブラウザに保存されている既存の請求書データをGoogleスプレッドシートに一括送信します。
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <button id="save-settings-btn" class="btn btn-primary">設定を保存</button>
+        </section>
+
+        <!-- プレビュー画面（モーダル） -->
+        <div id="preview-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>請求書プレビュー</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="preview-content"></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="download-pdf-btn" class="btn btn-primary">PDFダウンロード</button>
+                    <button class="btn btn-secondary close-modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- フッター -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 請求書ジェネレーター</p>
+        </div>
+    </footer>
+
+    <!-- html2canvas for HTML to image conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- jsPDF-AutoTable for table support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- SheetJS for Excel/CSV export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/pdf.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
